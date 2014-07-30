@@ -1,5 +1,5 @@
 from selenium import webdriver
-import time, urllib2, json, random, threading
+import sys, time, urllib2, json, random, threading
 
 class Bing:
 
@@ -39,7 +39,7 @@ class Bing:
             driver.find_element_by_id("sb_form_q").clear()
             driver.find_element_by_id("sb_form_q").send_keys(self._newWord())
             driver.find_element_by_id("sb_form_go").click()
-            time.sleep(1.0)
+            time.sleep(random.randint(1,15))
         driver.get(self.base_url + "/rewards/dashboard")
         print username, "has", self._get_credits(freq), "credits."
         driver.find_element_by_id("id_n").click()
@@ -137,9 +137,10 @@ FREQ_M = 20        # of searches for mobile
 def getCreds(filename):
     creds = []
     with open(filename, "r") as f:
-        for line in f:
-            u, p, f = line.rstrip().split(",")
-            creds.append( (u.strip(' '), p.strip(' '), int(f)) )
+        for line in f:  
+            if not '#' in line:
+                u, p, f = line.rstrip().split(",")
+                creds.append( (u.strip(' '), p.strip(' '), int(f)) )
     return creds
 
 if __name__ == "__main__":
@@ -155,18 +156,25 @@ if __name__ == "__main__":
     creds = getCreds(filename="config")
 
     # CHECK THIS TO 0 if you want to perform a credit check    
-    checkonly = 1
+    checkonly = 0
+    threading = 0
 
-    if not checkonly:
-        # search for points
-        td = threading.Thread(name='Bing Desktop', target=bing, args=(False,))
-        tm = threading.Thread(name='Bing Mobile', target=bing, args=(True,))
-        td.start()
-        tm.start()
+    if checkonly or 'balance' in sys.argv[1]:
 
-    else:
         # check available credits, 
         # progress of the day for desktop search, 
         # progress of the day for mobile search
         b = Bing(is_mobile=False)
         b.check_credits()
+
+    else:
+        if threading:
+            # search for points
+            td = threading.Thread(name='Bing Desktop', target=bing, args=(False,))
+            tm = threading.Thread(name='Bing Mobile', target=bing, args=(True,))
+            td.start()
+            tm.start()
+
+        else:
+            bing(False)
+            bing(True)
