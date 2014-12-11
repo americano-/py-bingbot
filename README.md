@@ -11,8 +11,9 @@ for mobile search
 
 #USAGE bing_webdriver.py:
 Put your credentials in config file.
-Toggle "checkonly" what you want to do in the main def in bing_webdriver.py
-python bing_webdriver.py
+python bing_webdriver.py balance # to check balance
+python bing_webdriver.py desktop # to perform desktop search
+python bing_webdriver.py mobile # to perform mobile search
 
 #REQUIREMENTS:
 The following python modules are required.
@@ -23,7 +24,6 @@ random
 sys
 json 
 threading
-
 
 sudo pip install selenium urllib2 
 
