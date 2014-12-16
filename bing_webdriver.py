@@ -42,7 +42,7 @@ class Bing:
         time.sleep(2.0)
 
     def _search(self, username, password, freq):
-        global DEBUG
+        global DEBUG, SEARCH_SLEEP
         if DEBUG:
             print "_search"
         driver = self.driver
@@ -50,17 +50,17 @@ class Bing:
         driver.get(self.base_url)
         for i in range(freq):
             driver.find_element_by_id("sb_form_q").clear()
-            driver.find_element_by_id("sb_form_q").send_keys(self._newWord2(i))
+            driver.find_element_by_id("sb_form_q").send_keys(self._newWord())
             driver.find_element_by_id("sb_form_go").click()
             if i == freq-1: # last one no need to sleep
                 break;
-            time.sleep(random.randint(5,10))
+            time.sleep(random.randint(SEARCH_SLEEP, SEARCH_SLEEP+10))
         driver.get(self.base_url + "/rewards/dashboard")
         driver.find_element_by_id("id_n").click()
         driver.find_element_by_partial_link_text("Sign out").click()
 
     def _search_mobile(self, username, password, freq):
-        global DEBUG
+        global DEBUG, SEARCH_SLEEP
         if DEBUG:
             print "_search_mobile"
         driver = self.driver
@@ -81,11 +81,11 @@ class Bing:
         for i in range(freq):
             driver.find_element_by_id("sb_form_q").click()
             driver.find_element_by_id("sb_form_q").clear()
-            driver.find_element_by_id("sb_form_q").send_keys(self._newWord2(i))
+            driver.find_element_by_id("sb_form_q").send_keys(self._newWord())
             driver.find_element_by_id("sb_form_q").send_keys(Keys.RETURN)
             if i == freq-1: # last one no need to sleep
                 break
-            time.sleep(random.randint(5,15))
+            time.sleep(random.randint(SEARCH_SLEEP, SEARCH_SLEEP+10))
         driver.get(self.base_url + "/rewards/dashboard")
         driver.find_element_by_css_selector(".right.rms_img").click()
         driver.execute_script('Transition.Accordion.toggle(\'Account\')')
@@ -174,9 +174,10 @@ class Bing:
 # end of Bing class
 
 # GLOBALS
-API_KEY = "9999999999999999999999999999999999999999999999999"
+API_KEY = "9999999999999999999999999999999999999"
 url = "http://www.bing.com"
 FREQ_M = 20 # of searches for mobile
+SEARCH_SLEEP = 60
 DEBUG = 0
 RANDOM_ORDER = 0 # random order for users in config file
 fixWords = ["1. Tomato ",  
