@@ -47,6 +47,7 @@ class Bing:
             print "_search"
         driver = self.driver
         self._login(username, password)
+        assert driver.find_element_by_id("id_n").text != "", driver.find_element_by_id("id_n").text
         driver.get(self.base_url)
         for i in range(freq):
             driver.find_element_by_id("sb_form_q").clear()
@@ -174,7 +175,7 @@ class Bing:
 # end of Bing class
 
 # GLOBALS
-API_KEY = "9999999999999999999999999999999999999"
+API_KEY = "9999999999999999999999999999999999999999999999999"
 url = "http://www.bing.com"
 FREQ_M = 20 # of searches for mobile
 SEARCH_SLEEP = 60
