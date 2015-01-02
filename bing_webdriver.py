@@ -47,6 +47,7 @@ class Bing:
             print "_search"
         driver = self.driver
         self._login(username, password)
+        assert driver.find_element_by_id("id_n").text != "", driver.find_element_by_id("id_n").text
         driver.get(self.base_url)
         for i in range(freq):
             driver.find_element_by_id("sb_form_q").clear()
@@ -54,10 +55,7 @@ class Bing:
             driver.find_element_by_id("sb_form_go").click()
             if i == freq-1: # last one no need to sleep
                 break;
-            time.sleep(random.randint(SEARCH_SLEEP, SEARCH_SLEEP+10))
-        driver.get(self.base_url + "/rewards/dashboard")
-        driver.find_element_by_id("id_n").click()
-        driver.find_element_by_partial_link_text("Sign out").click()
+            time.sleep(random.randint(SEARCH_SLEEP, SEARCH_SLEEP+5))
 
     def _search_mobile(self, username, password, freq):
         global DEBUG, SEARCH_SLEEP
@@ -85,12 +83,7 @@ class Bing:
             driver.find_element_by_id("sb_form_q").send_keys(Keys.RETURN)
             if i == freq-1: # last one no need to sleep
                 break
-            time.sleep(random.randint(SEARCH_SLEEP, SEARCH_SLEEP+10))
-        driver.get(self.base_url + "/rewards/dashboard")
-        driver.find_element_by_css_selector(".right.rms_img").click()
-        driver.execute_script('Transition.Accordion.toggle(\'Account\')')
-        driver.find_element_by_partial_link_text("Sign out").click()
-        time.sleep(5.0)
+            time.sleep(random.randint(SEARCH_SLEEP, SEARCH_SLEEP+5))
 
     def _get_credits(self, f):
         global DEBUG
@@ -120,27 +113,19 @@ class Bing:
             print "***"
         else: # finish the ,
             print 
-        self.driver.get(self.base_url)
-        self.driver.find_element_by_id("id_n").click()
-        self.driver.find_element_by_partial_link_text("Sign out").click()
-        #self.driver.find_element_by_css_selector(".lnk").click()
-        time.sleep(1.0)
 
     def _newWord(self):
-        global DEBUG, API_KEY
+        global DEBUG, API_KEY, DO_NOT_CACHE_WORDS
         if DEBUG:
             print "_newWord:", 
         url = 'http://api.wordnik.com:80/v4/words.json/randomWord?hasDictionaryDef=false&minCorpusCount=0&maxCorpusCount=-1&minDictionaryCount=1&maxDictionaryCount=-1&minLength=5&maxLength=-1&api_key=' + API_KEY
         res = json.load(urllib2.urlopen(url))
         if DEBUG:
             print res['word']
+        if not DO_NOT_CACHE_WORDS:
+            with open("cache", "a") as f:
+                f.write(res["word"] + "\n")        
         return res['word']
-
-    def _newWord2(self, count):
-        global DEBUG, fixWords
-        if DEBUG:
-            print "_newWord", count
-        return fixWords[count%len(fixWords)]
 
     def test_bing(self):
         global DEBUG
@@ -169,60 +154,18 @@ class Bing:
             print count, "of", len(creds),
             self._check_credits(u, p, f)
             count += 1
-        self._tearDown()
+            self._tearDown()
 
 # end of Bing class
 
 # GLOBALS
-API_KEY = "9999999999999999999999999999999999999"
+API_KEY = "9999999999999999999999999999999999999999999999999"
 url = "http://www.bing.com"
-FREQ_M = 20 # of searches for mobile
-SEARCH_SLEEP = 60
+FREQ_M = 22 # of searches for mobile
+SEARCH_SLEEP = 0
 DEBUG = 0
 RANDOM_ORDER = 0 # random order for users in config file
-fixWords = ["1. Tomato ",  
-"2. Parking lot ",  
-"3. Monkey ",  
-"4. Squirrel ",  
-"5. Bottle ",  
-"6. Toenail ",  
-"7. Ship ",  
-"8. Toothbrush ",  
-"9. Elephant ",  
-"10. Shoe ",  
-"11. Donkey ",  
-"12. Eraser ",  
-"13. Olive ",  
-"14. Lipstick ",  
-"15. Spoon ",  
-"16. Raisin ",  
-"17. Paper ",  
-"18. Watermelon ",  
-"19. Lace ",  
-"20. Coffee ",  
-"21. Flower ",  
-"22. Basket ",  
-"23. Pupil ",  
-"24. Eggs ",  
-"25. Socks ",  
-"26. Birdhouse ",  
-"27. Chair ",  
-"28. Glasses ",  
-"29. Barbies ",  
-"30. Donuts ",
-"Aetna",
-"cryptanalysis",
-"subconnect",
-"roulade",
-"pocketknife",
-"jounce",
-"barer",
-"cromorne",
-"macroscopically",
-"caschrom",
-"guiltiness",
-"volumed",
-"vulcanology"]
+DO_NOT_CACHE_WORDS = 0
 
 ## helper functions
 # Pass in a config file
@@ -264,15 +207,32 @@ if __name__ == "__main__":
         # both desktop and mobile search
             thread = 1
         elif 'mobile' in sys.argv[1]:
-            bing(True)
+            count = 1
+            for u,p,__not_used in creds:
+                print "Mobile:", count, "of", len(creds), u, FREQ_M
+                b = Bing(is_mobile=True)
+                b._search_mobile(u, p, FREQ_M)
+                b._tearDown()
+                count += 1
         elif 'desktop' in sys.argv[1]:
-            bing(False)
+            count = 1
+            for u,p,f in creds:
+                print "Desktop:", count, "of", len(creds), u, f
+                b = Bing(is_mobile=False)
+                b._search(u, p, f)
+                b._tearDown()
+                count += 1
         elif checkonly or 'balance' in sys.argv[1]:
             # check available credits, 
             # progress of the day for desktop search, 
             # progress of the day for mobile search
-            b = Bing(is_mobile=False)
-            b.check_credits()
+            count = 1
+            for u,p,f in creds:
+                b = Bing(is_mobile=False)
+                print count, "of", len(creds),
+                b._check_credits(u, p, f)
+                b._tearDown()
+                count += 1
 
         if thread:
             # search for points
