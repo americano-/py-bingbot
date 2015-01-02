@@ -1,15 +1,5 @@
-# Stickies:
-current version is bing_webdriver.py. 
-bing-search.py is deprecated.
-
-#USAGE bing-search.py:
-for normal desktop search 
-./bing-search.py 'username' 'password'
-
-for mobile search 
-./bing-search.py 'username' 'password' mobile
-
 #USAGE bing_webdriver.py:
+Obtain your own API_KEY from wordnik.com.
 Put your credentials in config file.
 python bing_webdriver.py balance # to check balance
 python bing_webdriver.py desktop # to perform desktop search
@@ -25,6 +15,7 @@ sys
 json 
 threading
 
+You can install them by using pip:
 sudo pip install selenium urllib2 
 
 
